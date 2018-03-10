@@ -4,6 +4,7 @@
 import subprocess
 import glob
 import re
+import xlrd
 
 from page import Page
 
