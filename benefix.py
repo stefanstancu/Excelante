@@ -5,6 +5,8 @@ import subprocess
 import glob
 import re
 
+from page import Page
+
 def check_dependencies():
     try:
         x = subprocess.Popen(["gs", "--version"], stdout=subprocess.PIPE)
@@ -12,27 +14,25 @@ def check_dependencies():
         if e.errno == 2:
             print("Error: GhostScript not installed or gs command not available")
 
-def read_pdfs():
-    #pdf_file_names = glob.glob("*.pdf")
-    pdf_file_names = ["para01.pdf"]
-
+def read_pdf(file_name):
     raw_text = []
-    for i, file_name in enumerate(pdf_file_names):
-        cmd = ["gs", "-sDEVICE=txtwrite", "-dNOPAUSE", "-dBATCH", "-sOutputFile=-", file_name]
-        x = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        text, err = x.communicate()
-        if not err:
-            print(err)
-            exit()
+    cmd = ["gs", "-sDEVICE=txtwrite", "-dNOPAUSE", "-dBATCH", "-sOutputFile=-", file_name]
 
-        for page_index, page_text in enumerate(text.split("Page")):
-            raw_text.insert(page_index, [])
-            for line_index, line_text in enumerate(re.split("\r\n |\n ", page_text)):
-                raw_text[page_index].insert(line_index, line_text)
+    x = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    text, err = x.communicate()
+    if not err:
+        print(err)
+        exit()
 
-        for line in raw_text[2]:
-            print(line)
+    for page in text.split("Page"):
+        raw_text.append(re.split("\r\n |\n ", page)[1:21])
+
+    raw_text.pop(0)
+    return raw_text
+
 
 if __name__=="__main__":
     check_dependencies()
-    read_pdfs()
+    for page in read_pdf("para01.pdf"):
+        Page(page).print_page()
+    
