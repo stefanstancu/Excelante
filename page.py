@@ -35,6 +35,21 @@ class Page:
         for key, value in self.data.items():
             print("    " + key + ": " + str(value))
     
+    def data_list(self):
+        """
+        Return data as a list in the order needed to print the data
+        """
+        data_list = []
+        for i in range(21, 65):
+            data_list.insert(i - 18, self.data[str(i)])
+
+        data_list.insert(0, self.data["0-18"])
+        data_list.insert(1, self.data["19-20"])
+        data_list.append(self.data["65+"])
+        
+        return data_list
+
+
     def _scrape_data(self):
         # The desired output has ranges 0-18 and 19-20 which in the pdfs are available as 0-20.
         # The same occurs with range 64. The pdf only contains 64+.

@@ -4,7 +4,7 @@
 import subprocess
 import glob
 import re
-import xlrd
+import openpyxl
 
 from page import Page
 
@@ -31,9 +31,35 @@ def read_pdf(file_name):
     raw_text.pop(0)
     return raw_text
 
+def dump_page(ws, page):
+    """
+    Appends the page (row) to the sheet
+    @param ws an open worksheet
+    @page a page object
+    """
+    row = ws.max_row + 1
+    ws.cell(row=row, column=1, value=str(page.start_date) + " UTC")
+    ws.cell(row=row, column=2, value=str(page.end_date) + " UTC")
+    ws.cell(row=row, column=3, value=page.product_name)
+    ws.cell(row=row, column=4, value=page.state)
+    ws.cell(row=row, column=5, value=page.rating)
+    
+    data = page.data_list()
+    for column in range(6, 6 + len(data)):
+        ws.cell(row=row, column=column, value=data[column - 6])
+
 
 if __name__=="__main__":
+    excel_file = "BeneFix Small Group Plans upload template.xlsx"
+
     check_dependencies()
-    for page in read_pdf("para01.pdf"):
-        Page(page).print_page()
+
+    wb = openpyxl.load_workbook(excel_file)
+
+    for file_name in glob.glob("*.pdf"):
+        print("Parsing " + file_name)
+        for raw_page_text in read_pdf(file_name):
+            page = Page(raw_page_text)
+            dump_page(wb.active, page)
     
+    wb.save(excel_file)
